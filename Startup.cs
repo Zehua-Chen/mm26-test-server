@@ -53,7 +53,7 @@ namespace MM26TestServer
             app.UseWebSockets();
             app.Use(async (context, next) =>
             {
-                if (context.Request.Path == "/visualizer")
+                if (context.Request.Path == "/visualizer/")
                 {
                     if (context.WebSockets.IsWebSocketRequest)
                     {

@@ -1,7 +1,9 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Net.WebSockets;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using MM26TestServer.Services;
 using MM26TestServer.Models;
 
@@ -10,10 +12,14 @@ namespace MM26TestServer
     public class WebSocketConnectionHandler
     {
         private IConfigurationService _configurationService;
+        private ILogger<WebSocketConnectionHandler> _logger;
 
-        public WebSocketConnectionHandler(IConfigurationService configurationService)
+        public WebSocketConnectionHandler(
+            IConfigurationService configurationService,
+            ILogger<WebSocketConnectionHandler> logger)
         {
             _configurationService = configurationService;
+            _logger = logger;
         }
 
         public async Task Handle(WebSocket ws)
@@ -22,7 +28,11 @@ namespace MM26TestServer
                 .Select((value, index) => (byte)value)
                 .ToArray();
 
+            _logger.LogInformation("Sending State");
+
             await ws.SendAsync(stateData, WebSocketMessageType.Binary, true, CancellationToken.None);
+
+            _logger.LogInformation("State Sent");
 
             foreach (Change change in _configurationService.Changes)
             {
@@ -30,12 +40,18 @@ namespace MM26TestServer
                     .Select((value, index) => (byte)value)
                     .ToArray();
 
+                _logger.LogInformation("Sending Change");
+
                 await ws.SendAsync(
                     changeData,
                     WebSocketMessageType.Binary,
                     true,
                     CancellationToken.None);
+
+                _logger.LogInformation("Change Sent");
             }
+
+            _logger.LogInformation("Done");
         }
     }
 }
