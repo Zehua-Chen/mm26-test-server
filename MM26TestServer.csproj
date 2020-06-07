@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>mm26-test-server</AssemblyName>
   </PropertyGroup>
-
 
   <ItemGroup>
     <Folder Include="Models\" />

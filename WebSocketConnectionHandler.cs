@@ -49,6 +49,10 @@ namespace MM26TestServer
                     CancellationToken.None);
 
                 _logger.LogInformation("Change Sent");
+
+                await Task.Delay((int)(change.Delay * 1000));
+
+                _logger.LogInformation("Wait Done");
             }
 
             _logger.LogInformation("Done");
