@@ -28,7 +28,7 @@ namespace MM26TestServer
                 .Select((value, index) => (byte)value)
                 .ToArray();
 
-            _logger.LogInformation("Sending State");
+            _logger.LogInformation("Sending State (Length = {0})", stateData.Length);
 
             await ws.SendAsync(stateData, WebSocketMessageType.Binary, true, CancellationToken.None);
 
@@ -40,7 +40,7 @@ namespace MM26TestServer
                     .Select((value, index) => (byte)value)
                     .ToArray();
 
-                _logger.LogInformation("Sending Change");
+                _logger.LogInformation("Sending Change (Length = {0})", changeData.Length);
 
                 await ws.SendAsync(
                     changeData,
