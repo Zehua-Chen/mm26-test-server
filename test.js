@@ -8,7 +8,7 @@ let data = JSON.stringify({
 let options = {
   method: "POST",
   hostname: "localhost",
-  port: 5000,
+  port: 8081,
   path: "/configure",
   headers: {
     "Content-Type": "application/json",

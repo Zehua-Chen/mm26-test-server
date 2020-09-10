@@ -24,6 +24,13 @@ namespace MM26TestServer
 
         public async Task Handle(WebSocket ws)
         {
+            if (_configurationService.State == null
+                || _configurationService.Changes == null)
+            {
+                _logger.LogWarning("Configuration incomplete, no data sent");
+                return;
+            }
+
             byte[] stateData = _configurationService.State
                 .Select((value, index) => (byte)value)
                 .ToArray();

@@ -6,7 +6,7 @@
     AfterTargets="Build"
   >
     <ZipDirectory
-      SourceDirectory="$(OutputPath)"
+      SourceDirectory="$(OutputPath)\publish"
       DestinationFile="$(MSBuildProjectDirectory)\mm26-test-server.zip" />
   </Target>
 
