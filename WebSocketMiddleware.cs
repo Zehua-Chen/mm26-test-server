@@ -7,16 +7,17 @@ using System.Net.WebSockets;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 
 namespace MM26TestServer
 {
-    public static class Foo
+    public static class WebScoketMiddleware
     {
         public static void UseVisualizerHandler(this IApplicationBuilder builder)
         {
-            builder.Use(Foo.Middleware);
+            builder.Use(WebScoketMiddleware.Middleware);
         }
 
         private static async Task Middleware(HttpContext context, Func<Task> next)
@@ -27,8 +28,9 @@ namespace MM26TestServer
                 {
                     WebSocket ws = await context.WebSockets.AcceptWebSocketAsync();
                     var configuration = ActivatorUtilities.GetServiceOrCreateInstance<IConfiguration>(context.RequestServices);
+                    var logger = ActivatorUtilities.GetServiceOrCreateInstance<ILogger<Startup>>(context.RequestServices);
 
-                    await Handle(ws, configuration);
+                    await Handle(ws, configuration, logger);
                 }
                 else
                 {
@@ -41,8 +43,13 @@ namespace MM26TestServer
             }
         }
 
-        private static async Task Handle(WebSocket ws, IConfiguration configuration)
+        private static async Task Handle(
+            WebSocket ws,
+            IConfiguration configuration,
+            ILogger<Startup> logger)
         {
+            logger.LogInformation("On Connection");
+
             var protoConfig = configuration.GetSection(ProtoConfiguration.Proto)
                 .Get<ProtoConfiguration>();
 
@@ -53,11 +60,16 @@ namespace MM26TestServer
             foreach (var file in files)
             {
                 byte[] content = await File.ReadAllBytesAsync(file);
+
                 await ws.SendAsync(
                     new ArraySegment<byte>(content),
                     WebSocketMessageType.Binary,
                     true,
                     CancellationToken.None);
+
+                logger.LogInformation("Sent {0} bytes", content.Length);
+
+                await Task.Delay(1000);
             }
         }
     }
