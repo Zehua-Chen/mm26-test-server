@@ -2,67 +2,49 @@
 using System.Threading;
 using System.Threading.Tasks;
 using System.Net.WebSockets;
+using System.Text;
 using System.Linq;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using MM26TestServer.Services;
-using MM26TestServer.Models;
 
 namespace MM26TestServer
 {
     public class WebSocketConnectionHandler
     {
-        private IConfigurationService _configurationService;
         private ILogger<WebSocketConnectionHandler> _logger;
+        private ProtoConfiguration _protoConfiguration;
+        private byte[] data = Encoding.UTF8.GetBytes("ass we can");
 
         public WebSocketConnectionHandler(
-            IConfigurationService configurationService,
+            IConfiguration configuration,
             ILogger<WebSocketConnectionHandler> logger)
         {
-            _configurationService = configurationService;
             _logger = logger;
+
+            _protoConfiguration = configuration
+                .GetSection(ProtoConfiguration.Proto)
+                .Get<ProtoConfiguration>();
         }
 
         public async Task Handle(WebSocket ws)
         {
-            if (_configurationService.State == null
-                || _configurationService.Changes == null)
-            {
-                _logger.LogWarning("Configuration incomplete, no data sent");
-                return;
-            }
+            _logger.LogInformation("bytes = {0}", data.Length);
+            _logger.LogInformation("state = {0}", ws.State);
 
-            byte[] stateData = _configurationService.State
-                .Select((value, index) => (byte)value)
-                .ToArray();
+            await ws.SendAsync(
+                new ArraySegment<byte>(data),
+                WebSocketMessageType.Binary,
+                true,
+                CancellationToken.None);
 
-            _logger.LogInformation("Sending State (Length = {0})", stateData.Length);
+            byte[] buffer = new byte[100];
 
-            await ws.SendAsync(stateData, WebSocketMessageType.Binary, true, CancellationToken.None);
+            await ws.ReceiveAsync(
+                new ArraySegment<byte>(buffer),
+                CancellationToken.None);
 
-            _logger.LogInformation("State Sent");
-
-            foreach (Change change in _configurationService.Changes)
-            {
-                byte[] changeData = change.Data
-                    .Select((value, index) => (byte)value)
-                    .ToArray();
-
-                _logger.LogInformation("Sending Change (Length = {0})", changeData.Length);
-
-                await ws.SendAsync(
-                    changeData,
-                    WebSocketMessageType.Binary,
-                    true,
-                    CancellationToken.None);
-
-                _logger.LogInformation("Change Sent");
-
-                await Task.Delay((int)(change.Delay * 1000));
-
-                _logger.LogInformation("Wait Done");
-            }
-
-            _logger.LogInformation("Done");
+            _logger.LogInformation(Encoding.UTF8.GetString(buffer));
+            _logger.LogInformation("connection closed");
         }
     }
 }
