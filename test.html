@@ -12,7 +12,7 @@
         console.log(event);
       }
 
-      ws.onmessage = () => {
+      ws.onclose = () => {
         console.log("on close");
       }
     </script>
