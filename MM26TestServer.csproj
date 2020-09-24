@@ -5,6 +5,8 @@
     Name="Zip"
     AfterTargets="Build"
   >
+    <Message Text="Creating Archive"></Message>
+    <Delete Files="$(MSBuildProjectDirectory)\mm26-test-server.zip"></Delete>
     <ZipDirectory
       SourceDirectory="$(OutputPath)\publish"
       DestinationFile="$(MSBuildProjectDirectory)\mm26-test-server.zip" />
